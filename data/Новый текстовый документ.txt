@@ -1,4 +1,4 @@
-﻿//
+//
 #include <time.h>
 #include <iostream>
 #include <intrin.h>
@@ -23,7 +23,7 @@ bool myFunction(unsigned short n) {
 }
 
 
-unsigned long long counter = 1e6;
+unsigned long long counter = 1e9;
 
 unsigned __int64 fibRecursive(unsigned __int64 n) {
     if (n < 2) return n;
@@ -33,18 +33,19 @@ unsigned __int64 fibRecursive(unsigned __int64 n) {
 void measureByClock(int n) {
     // measuring by clock
     clock_t start = clock();
-
+    
     for (size_t i = 0; i < counter; i++)
     {
         fibRecursive(n);
     }
     clock_t end = clock();
     clock_t delta = end - start;
-    double time = (delta * 1.0) / (CLOCKS_PER_SEC);
+    double time = (delta * 1.0 ) / (CLOCKS_PER_SEC);
     time = (time * 1.0) / counter;
     time *= 1e9;
+    int res = fibRecursive(n);
     cout.precision(0);
-    cout << "Result for " << n << " is " << fixed << time << " by clock " << "\n";
+    cout << "Result for " << n << " is " << fixed << time << " by clock " << res << "\n";
 }
 
 
@@ -52,7 +53,7 @@ void measureByClock(int n) {
 inline void measureByTSC(int n) {
     clock_t tclock = clock();
     while (clock() < tclock + 1); // ожидание конца начавшегося такта
-
+    
     tclock = clock();
     unsigned long long  tsc = __rdtsc();
     while (clock() < tclock + 1); // ожидание конца начавшегося такта
@@ -67,9 +68,9 @@ inline void measureByTSC(int n) {
     tscDelta = tscEnd - tsc;// сколько тактов TSC прошло за один такт clock
     unsigned long long F2 = (tscDelta * CLOCKS_PER_SEC); // частота процессора
 
-
-    F1 = min(F1, F2);
-    cout << "frequancy is " << F1 << endl;
+    
+    F1 = min(F1,F2);
+    cout << "frequancy is "<< F1 << endl;
     unsigned long long start;
     unsigned long long end;
     start = __rdtsc();
@@ -80,7 +81,8 @@ inline void measureByTSC(int n) {
     double delta = (deltaTSC * 1.0) / F1;
     delta *= 1e9;
     cout.precision(0);
-    cout << "Result for " << n << " is " << fixed << delta << " by TSC " << "\n";
+    int res = fibRecursive(n);
+    cout << "Result for " << n << " is " << fixed << delta << " by TSC " << res << "\n";
 }
 
 void measureByQPC(int n) {
@@ -98,26 +100,26 @@ void measureByQPC(int n) {
     delta = delta / freqQPC.QuadPart;
     delta *= 1e9;
     cout.precision(0);
-    cout << "Result for " << n << " is " << fixed << delta << " by QPC " << "\n";
+    int res = fibRecursive(n);
+    cout << "Result for " << n << " is " << fixed << delta << " by QPC " << res << "\n";
 }
 
 int main()
 {
     int n = 10;
-
-    fibRecursive(n);
+    
     measureByClock(n);
     measureByTSC(n);
     measureByQPC(n);
     cout << endl;
 
     int k = 40;
-    counter = 10;
+    counter = 1e1;
     measureByClock(k);
     measureByTSC(k);
     measureByQPC(k);
 
-
+   
 }
 
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
