@@ -30,13 +30,13 @@ unsigned __int64 fibRecursive(unsigned __int64 n) {
     return fibRecursive(n - 1) + fibRecursive(n - 2);
 }
 
-void measureByClock(int n) {
+long measureByClock(int n) {
     // measuring by clock
     clock_t start = clock();
-
+    long res = 0;
     for (size_t i = 0; i < counter; i++)
     {
-        fibRecursive(n);
+        res = fibRecursive(n);
     }
     clock_t end = clock();
     clock_t delta = end - start;
@@ -45,11 +45,12 @@ void measureByClock(int n) {
     time *= 1e9;
     cout.precision(0);
     cout << "Result for " << n << " is " << fixed << time << " by clock " << "\n";
+    return res;
 }
 
 
 
-inline void measureByTSC(int n) {
+inline long measureByTSC(int n) {
     clock_t tclock = clock();
     while (clock() < tclock + 1); // ожидание конца начавшегося такта
 
@@ -72,8 +73,9 @@ inline void measureByTSC(int n) {
     cout << "frequancy is " << F1 << endl;
     unsigned long long start;
     unsigned long long end;
+    long res = 0;
     start = __rdtsc();
-    fibRecursive(n);
+    res = fibRecursive(n);
     end = __rdtsc();
 
     unsigned long long deltaTSC = end - start;
@@ -81,16 +83,17 @@ inline void measureByTSC(int n) {
     delta *= 1e9;
     cout.precision(0);
     cout << "Result for " << n << " is " << fixed << delta << " by TSC " << "\n";
+    return res;
 }
 
-void measureByQPC(int n) {
+long measureByQPC(int n) {
     LARGE_INTEGER t_start, t_finish, freqQPC, t;
     QueryPerformanceFrequency(&freqQPC); // получаем частоту
     QueryPerformanceCounter(&t_start); // засекаем время старта CODE
-
+    long res = 0;
     for (size_t i = 0; i < counter; i++)
     {
-        fibRecursive(n);
+        res = fibRecursive(n);
     }
     QueryPerformanceCounter(&t_finish);
     auto deltaQPC = t_finish.QuadPart - t_start.QuadPart;
@@ -99,23 +102,26 @@ void measureByQPC(int n) {
     delta *= 1e9;
     cout.precision(0);
     cout << "Result for " << n << " is " << fixed << delta << " by QPC " << "\n";
+    return res;
 }
 
 int main()
 {
     int n = 10;
 
+    counter = 1e6;
     fibRecursive(n);
-    measureByClock(n);
-    measureByTSC(n);
-    measureByQPC(n);
+    long res = 0;
+    res = measureByClock(n);
+    res = measureByTSC(n);
+    res = measureByQPC(n);
     cout << endl;
 
     int k = 40;
     counter = 10;
-    measureByClock(k);
-    measureByTSC(k);
-    measureByQPC(k);
+    res =  measureByClock(k);
+    res =   measureByTSC(k);
+    res = measureByQPC(k);
 
 
 }
@@ -130,27 +136,3 @@ int main()
 //   4. В окне "Список ошибок" можно просматривать ошибки.
 //   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
 //   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
-//// measuring by TSC
-
-//clock_t tclock = clock();
-//while (clock() < tclock + 1); // ожидание конца текущего такта clock
-//
-//tclock = clock();
-//unsigned long long tsc = __rdtsc();
-//while (clock() < tclock + 1); // ожидание конца начавшегося такта
-////tsc = __rdtsc() – tsc;
-//tsc -= __rdtsc(); // сколько тактов TSC прошло за один такт clock
-//unsigned long long F1 = tsc * CLOCKS_PER_SEC; // частота процессора
-//
-//tclock = clock();
-//tsc = __rdtsc();
-//while (clock() < tclock + 1); // ожидание конца начавшегося такта
-////tsc = __rdtsc() – tsc;
-//tsc -= __rdtsc(); // сколько тактов TSC прошло за один такт clock
-//unsigned long long F2 = tsc * CLOCKS_PER_SEC; // частота процессора
-//
-//F1 = F1 < F2 ? F1 : F2;
-//time = clock();
-//fibRecursive(10);
-//time -= clock();
-//cout << "Result by TSC is " << time / F1 << "\n";
