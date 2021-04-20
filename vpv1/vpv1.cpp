@@ -74,10 +74,14 @@ long measureByClock(int n) {
     unsigned long long start;
     unsigned long long end;
     long res = 0;
-    start = __rdtsc();
-    fibRecursive(n);
-    end = __rdtsc();
 
+
+    start = __rdtsc();
+    for (size_t i = 0; i < counter; i++)
+    {
+        res = fibRecursive(n);
+    }
+    end = __rdtsc();
     unsigned long long deltaTSC = end - start;
     double delta = (deltaTSC * 1.0) / (F1 * counter);
     delta *= 1e9;
