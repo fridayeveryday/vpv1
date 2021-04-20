@@ -75,11 +75,7 @@ long measureByClock(int n) {
     unsigned long long end;
     long res = 0;
     start = __rdtsc();
-    //res = fibRecursive(n);
-    for (size_t i = 0; i < counter; i++)
-    {
-        res = fibRecursive(n);
-    }
+    fibRecursive(n);
     end = __rdtsc();
 
     unsigned long long deltaTSC = end - start;
@@ -113,26 +109,17 @@ int main()
 {
     int n = 10;
 
-    counter = 1e6;
-    long res = fibRecursive(n);
-    //res = fibRecursive(n);
-    //res = fibRecursive(n);
-
-    /*res = measureByTSC(n);
-    res = measureByTSC(n);*/
-
-
-    res = measureByClock(n);
-    res = measureByQPC(n);
-    res = measureByTSC(n);
-
+    fibRecursive(n);
+    measureByClock(n);
+    measureByTSC(n);
+    measureByQPC(n);
     cout << endl;
 
     int k = 40;
     counter = 10;
-    res =  measureByClock(k);
-    res = measureByQPC(k);
-    res = measureByTSC(k);
+    measureByClock(k);
+    measureByTSC(k);
+    measureByQPC(k);
 
 }
 
