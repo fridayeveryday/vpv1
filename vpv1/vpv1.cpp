@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <profileapi.h>
 #include <math.h>
+#include <functional>
+
 using namespace std;
 
 // n & 2 => x1 because 1(10) = 000010(2) 
@@ -30,13 +32,13 @@ unsigned __int64 fibRecursive(unsigned __int64 n) {
     return fibRecursive(n - 1) + fibRecursive(n - 2);
 }
 
-long measureByClock(int n) {
+long measureByClock(int n, std::function<unsigned __int64(unsigned __int64)> func) {
     // measuring by clock
     clock_t start = clock();
-    long res = 0;
+    unsigned __int64 res = 0;
     for (size_t i = 0; i < counter; i++)
     {
-        res = fibRecursive(n);
+        res = func(n);
     }
     clock_t end = clock();
     clock_t delta = end - start;
@@ -50,7 +52,7 @@ long measureByClock(int n) {
 
 
 
- long measureByTSC(int n) {
+ long measureByTSC(int n, std::function<unsigned __int64(unsigned __int64)> func) {
     clock_t tclock = clock();
     while (clock() < tclock + 1); // ожидание конца начавшегося такта
 
@@ -73,13 +75,13 @@ long measureByClock(int n) {
     //cout << "frequancy is " << F1 << endl;
     unsigned long long start;
     unsigned long long end;
-    long res = 0;
+    unsigned __int64 res = 0;
 
 
     start = __rdtsc();
     for (size_t i = 0; i < counter; i++)
     {
-        res = fibRecursive(n);
+        res = func(n);
     }
     end = __rdtsc();
     unsigned long long deltaTSC = end - start;
@@ -90,14 +92,14 @@ long measureByClock(int n) {
     return res;
 }
 
-long measureByQPC(int n) {
+long measureByQPC(int n, std::function<unsigned __int64(unsigned __int64)> func) {
     LARGE_INTEGER t_start, t_finish, freqQPC, t;
     QueryPerformanceFrequency(&freqQPC); // получаем частоту
     QueryPerformanceCounter(&t_start); // засекаем время старта CODE
     long res = 0;
     for (size_t i = 0; i < counter; i++)
     {
-        res = fibRecursive(n);
+        res = func(n);
     }
     QueryPerformanceCounter(&t_finish);
     auto deltaQPC = t_finish.QuadPart - t_start.QuadPart;
@@ -113,17 +115,16 @@ int main()
 {
     int n = 10;
 
-    fibRecursive(n);
-    measureByClock(n);
-    measureByTSC(n);
-    measureByQPC(n);
+    measureByClock(n, fibRecursive);
+    measureByTSC(n, fibRecursive);
+    measureByQPC(n, fibRecursive);
     cout << endl;
 
     int k = 40;
     counter = 10;
-    measureByClock(k);
-    measureByTSC(k);
-    measureByQPC(k);
+    measureByClock(k, fibRecursive);
+    measureByTSC(k, fibRecursive);
+    measureByQPC(k, fibRecursive);
 
 }
 
