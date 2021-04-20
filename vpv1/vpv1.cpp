@@ -50,7 +50,7 @@ long measureByClock(int n) {
 
 
 
-inline long measureByTSC(int n) {
+ long measureByTSC(int n) {
     clock_t tclock = clock();
     while (clock() < tclock + 1); // ожидание конца начавшегося такта
 
@@ -70,18 +70,22 @@ inline long measureByTSC(int n) {
 
 
     F1 = min(F1, F2);
-    cout << "frequancy is " << F1 << endl;
+    //cout << "frequancy is " << F1 << endl;
     unsigned long long start;
     unsigned long long end;
     long res = 0;
     start = __rdtsc();
-    res = fibRecursive(n);
+    //res = fibRecursive(n);
+    for (size_t i = 0; i < counter; i++)
+    {
+        res = fibRecursive(n);
+    }
     end = __rdtsc();
 
     unsigned long long deltaTSC = end - start;
-    double delta = (deltaTSC * 1.0) / F1;
+    double delta = (deltaTSC * 1.0) / (F1 * counter);
     delta *= 1e9;
-    cout.precision(0);
+    //cout.precision(0);
     cout << "Result for " << n << " is " << fixed << delta << " by TSC " << "\n";
     return res;
 }
@@ -110,19 +114,25 @@ int main()
     int n = 10;
 
     counter = 1e6;
-    fibRecursive(n);
-    long res = 0;
+    long res = fibRecursive(n);
+    //res = fibRecursive(n);
+    //res = fibRecursive(n);
+
+    /*res = measureByTSC(n);
+    res = measureByTSC(n);*/
+
+
     res = measureByClock(n);
-    res = measureByTSC(n);
     res = measureByQPC(n);
+    res = measureByTSC(n);
+
     cout << endl;
 
     int k = 40;
     counter = 10;
     res =  measureByClock(k);
-    res =   measureByTSC(k);
     res = measureByQPC(k);
-
+    res = measureByTSC(k);
 
 }
 
