@@ -34,8 +34,8 @@ unsigned __int64 fibRecursive(unsigned __int64 n) {
 
 long measureByClock(int n, std::function<unsigned __int64(unsigned __int64)> func) {
     // measuring by clock
-    clock_t start = clock();
     unsigned __int64 res = 0;
+    clock_t start = clock();
     for (size_t i = 0; i < counter; i++)
     {
         res = func(n);
@@ -125,6 +125,8 @@ int main()
     measureByClock(k, fibRecursive);
     measureByTSC(k, fibRecursive);
     measureByQPC(k, fibRecursive);
+
+
 
 }
 
