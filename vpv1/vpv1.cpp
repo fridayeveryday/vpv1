@@ -86,13 +86,13 @@ long measureByTSC(int n, std::function<long(unsigned __int64)> func) {
 	long res = 0;
 	unsigned long long frequency = getFrequencyForTSC();
 	start = __rdtsc();
-	for (size_t i = 0; i < counter; i++)
-	{
-		res = func(n);
-	}
+	/*for (size_t i = 0; i < counter; i++)
+	{*/
+	res = func(n);
+	//}
 	end = __rdtsc();
 	unsigned long long deltaTSC = end - start;
-	double delta = (deltaTSC * 1.0) / (frequency * counter);
+	double delta = (deltaTSC * 1.0) / (frequency);
 	delta *= 1e9;
 	//cout.precision(0);
 	cout << "Result for " << n << " is " << fixed << delta << " by TSC " << "\n";
@@ -109,7 +109,7 @@ long measureByQPC(int n, std::function<long(unsigned __int64)> func) {
 		res = func(n);
 	}
 	QueryPerformanceCounter(&t_finish);
-	cout << "частота:" << freqQPC.QuadPart << endl;
+	//cout << "частота:" << freqQPC.QuadPart << endl;
 	auto deltaQPC = t_finish.QuadPart - t_start.QuadPart;
 	double delta = (deltaQPC * 1.0) / counter;
 	delta = delta / freqQPC.QuadPart;
@@ -217,7 +217,7 @@ void QPCRP(vector<double>& vec) {
 		QueryPerformanceCounter(&t_finish);
 		QueryPerformanceFrequency(&freqQPC); // получаем частоту
 		auto deltaQPC = t_finish.QuadPart - t_start.QuadPart;
-		cout << "частота:" << freqQPC.QuadPart << endl;
+		//cout << "частота:" << freqQPC.QuadPart << endl;
 		double delta = (deltaQPC * 1.0);
 		delta = delta / freqQPC.QuadPart;
 		//delta *= 1e9;
@@ -259,6 +259,7 @@ void read4bitNum(vector<int>& vec) {
 	{
 		in >> vec[i];
 	}
+	in.close();
 }
 
 //void writeTimes2File() {
@@ -357,12 +358,192 @@ void repeatabilityQPC() {
 	cout << fixed << "Повторяемость для QPC:\n среднее время = " << average << " стандартное отклонение = " << msd
 		<< " max = " << *min_max.second << " min = " << *min_max.first << endl << " процент отколнения среднеквадратичного от среднего " << (msd * 100 / average) << endl;
 }
+
+//void getApprox(vector<vector<double>>& x, double& a, double& b, int n) {
+//	double sumx = 0;
+//	double sumy = 0;
+//	double sumx2 = 0;
+//	double sumxy = 0;
+//	for (int i = 0; i < n; i++) {
+//		sumx += x[i][0];
+//		sumy += x[i][1];
+//		sumx2 += x[i][0] * x[i][0];
+//		sumxy += x[i][0] * x[i][1];
+//	}
+//	a = (n * sumxy - (sumx * sumy)) / (n * sumx2 - sumx * sumx);
+//	b = (sumy - a * sumx) / n;
+//	return;
+//}
+
+int empiricalDelta = 41000;
+void empiricalClock() {
+	vector<vector<double>> timesAndPayloads;
+	vector<double> times;
+	vector<int> rand4bitNum(1e7);
+	read4bitNum(rand4bitNum);
+
+	//clock_t  begin = clock();
+	//clock_t end = clock();
+	/*int payload = 1000;
+	while (end - begin < 1) {
+		begin = clock();
+		for (size_t i = 0; i < payload; i++)
+		{
+			bool res = myFunction(rand4bitNum[i]);
+		}
+		end = clock();
+		payload += 1e4;
+	}
+	cout << payload << endl;
+	empiricalDelta = payload;*/
+	for (size_t i = 1; i < 1001; i++)
+	{
+		clock_t start = clock();
+		for (size_t j = 0; j < i * empiricalDelta; j++)
+		{
+			bool res = myFunction(rand4bitNum[i]);
+		}
+		clock_t end = clock();
+		clock_t delta = end - start;
+		double time = (delta * 1.0) / CLOCKS_PER_SEC;
+		time *= 1e6;
+		if (!time) {
+			cout << "alert\n";
+		}
+		times.push_back(time);
+		timesAndPayloads.push_back({ i * 1.0, time });
+	}
+	cout << times[times.size() - 1] << endl;
+	double average, msd;
+	statistic(times, times.size(), average, msd);
+	auto min_max = minmax_element(times.begin(), times.end());
+	cout.precision(0);
+	cout << fixed << "Аппроксимация для clock:\n среднее время = " << average << " стандартное отклонение = " << msd
+		<< " max = " << *min_max.second << " min = " << *min_max.first << endl << " процент отколнения среднеквадратичного от среднего " << (msd * 100 / average) << endl;
+
+	double k = times[times.size() - 1] / times.size();
+	cout << " Коэффициент k = " << k << endl;
+	//vector<double> deltas;
+	//for (size_t i = 0; i < timesAndPayloads.size(); i++)
+	//{
+	//	deltas.push_back(abs(timesAndPayloads[i][1] - i * k * empiricalDelta));
+	//}
+	//statistic(deltas, deltas.size(), average, msd);
+	//min_max = minmax_element(deltas.begin(), deltas.end());
+	//cout.precision(0);
+	//cout << fixed << "Аппроксимация для clock:\n среднее ряда отклонений = " << average << " стандартное отклонение РО = " << msd
+	//	<< " max = " << *min_max.second << " min = " << *min_max.first << endl << " процент отколнения среднеквадратичного от среднего " << (msd * 100 / average) << endl;
+
+	ofstream out;
+	out.open(path + "empClock.txt");
+	out.precision(0);
+	for (size_t i = 0; i < times.size(); i++)
+	{
+		out << fixed << times[i] << "\n";
+	}
+	out.close();
+}
+
+void empirircalTSC() {
+	vector<double> times;
+	vector<int> rand4bitNum(1e7);
+	read4bitNum(rand4bitNum);
+	//empiricalDelta = 100;
+	for (size_t i = 1; i < 1001; i++)
+	{
+		unsigned long long start = __rdtsc();
+		for (size_t j = 0; j < i * empiricalDelta; j++)
+		{
+			bool res = myFunction(rand4bitNum[i]);
+		}
+		unsigned long long end = __rdtsc();
+		unsigned long long frequency = getFrequencyForTSC();
+		unsigned long long deltaTSC = end - start;
+		double time = (deltaTSC * 1.0) / frequency;
+		time *= 1e9;
+		times.push_back(time);
+	}
+
+	cout << times[times.size() - 1] << endl;
+	double average, msd;
+	statistic(times, times.size(), average, msd);
+	auto min_max = minmax_element(times.begin(), times.end());
+	cout.precision(0);
+	cout << fixed << "Аппроксимация для TSC:\n среднее время = " << average << " стандартное отклонение = " << msd
+		<< " max = " << *min_max.second << " min = " << *min_max.first << endl << " процент отколнения среднеквадратичного от среднего " << (msd * 100 / average) << endl;
+
+	double k = times[times.size() - 1] / times.size();
+	cout << " Коэффициент k = " << k << endl;
+
+	ofstream out;
+	out.open(path + "empTSC.txt");
+	out.precision(0);
+	for (size_t i = 0; i < times.size(); i++)
+	{
+		out << fixed << times[i] << "\n";
+	}
+	out << "k = " << k;
+	out.close();
+}
+
+void empiricalQPC() {
+	vector<double> times;
+	vector<int> rand4bitNum(1e7);
+	read4bitNum(rand4bitNum);
+	LARGE_INTEGER t_start, t_finish, freqQPC;
+	QueryPerformanceFrequency(&freqQPC); // получаем частоту
+	for (size_t i = 1; i < 1001; i++)
+	{
+		QueryPerformanceCounter(&t_start); // засекаем время старта CODE
+		for (size_t j = 0; j < i * empiricalDelta; j++)
+		{
+			bool res = myFunction(rand4bitNum[i]);
+		}
+		QueryPerformanceCounter(&t_finish);
+		auto deltaQPC = t_finish.QuadPart - t_start.QuadPart;
+		double time = (deltaQPC * 1.0) / freqQPC.QuadPart;
+		time *= 1e9;
+		times.push_back(time);
+	}
+
+	cout << times[times.size() - 1] << endl;
+	double average, msd;
+	statistic(times, times.size(), average, msd);
+	auto min_max = minmax_element(times.begin(), times.end());
+	cout.precision(0);
+	cout << "Аппроксимация для QPC:\n среднее время = " << average << " стандартное отклонение = " << msd
+		<< " max = " << *min_max.second << " min = " << *min_max.first << endl << " процент отколнения среднеквадратичного от среднего " << (msd * 100 / average) << endl;
+
+	double k = times[times.size() - 1] / times.size();
+	cout << " Коэффициент k = " << k << endl;
+
+	ofstream out;
+	out.open(path + "empQPC.txt");
+	out.precision(0);
+	//out.setf(ios::fixed);
+	//out.setf(ios::showpoint);
+	for (size_t i = 0; i < times.size(); i++)
+	{
+		out << fixed << times[i] << "\n";
+	}
+	out << "k = " << k;
+	out.close();
+
+}
 int main()
 {
 	//generateRandom4bitNum(rand4BitSize);
-	
+	//vector<vector<double>> x;
+	//x.push_back({ 0,2 });
+	//x.push_back({ 1,3 });
+	//x.push_back({ 2,4 });
+	//x.push_back({ 3,5 });
+
+	double a, b;
+	//getApprox(x, &a, &b, x.size());
+
 	setlocale(LC_ALL, "Russian");
-	cout << "menu: 0 - сделать все, 1 - фибоначчи, 2 - разрешающая способность, 3 - повторяемость результатов\n";
+	cout << "menu: 0 - сделать все, 1 - фибоначчи, 2 - разрешающая способность, 3 - повторяемость результатов, 4 - эмпирическая аппроксимация\n";
 	int menu;
 	cin >> menu;
 	if (menu == 1 || menu == 0) {
@@ -394,6 +575,11 @@ int main()
 		repeatabilityClock();
 		repeatabilityTSC();
 		repeatabilityQPC();
+	}
+	else if (menu == 4 || menu == 0) {
+		//empiricalClock();
+		//empirircalTSC();
+		empiricalQPC();
 	}
 
 
