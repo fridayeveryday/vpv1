@@ -262,101 +262,170 @@ void read4bitNum(vector<int>& vec) {
 	in.close();
 }
 
-//void writeTimes2File() {
-//	ofstream out;
-//	out.open(path + "repeatabilityByClock");
-//
-//}
 
+int countTSCRep = 20;
 int rand4BitSize = 1e5;
 void repeatabilityClock() {
 	vector<double> results;
 	vector<int> rand4bitNum(rand4BitSize);
 	read4bitNum(rand4bitNum);
+	int border = 1e5;
+	while (true)
+	{
+		int ind = rand();
+		clock_t start = clock();
+		for (size_t j = 0, i = 0; j < border; j++, i++)
+		{
+			bool res = myFunction(rand4bitNum[ind]);
+		}
+		clock_t end = clock();
+		if (end - start >= 200) {
+			break;
+		}
+		border += 1e5;
+	}
 	for (size_t i = 0; i < 1000; i++)
 	{
 		clock_t start = clock();
-		for (size_t i = 0; i < rand4bitNum.size(); i++)
+		for (size_t j = 0; j < border; j++)
 		{
 			bool res = myFunction(rand4bitNum[i]);
 		}
 		clock_t end = clock();
 		clock_t delta = end - start;
-		double time = (delta * 1.0) / CLOCKS_PER_SEC;
-		time /= rand4bitNum.size();
-		time *= 1e9;
-		results.push_back(time);
+		results.push_back(delta);
 	}
-
+	cout << "граница для clock " << border << endl;
 	double average = 0;
 	double msd = 0;
 	statistic(results, results.size(), average, msd);
 	auto min_max = minmax_element(results.begin(), results.end());
 
 	//cout.precision(5);
-	std::cout << fixed << "Повторяемость для clock:\n среднее время = " << average << " стандартное отклонение = " << msd
+	std::cout << fixed << "Повторяемость для clock:\n среднее  = " << average << " стандартное отклонение = " << msd
 		<< " max = " << *min_max.second << " min = " << *min_max.first << endl << " процент отколнения среднеквадратичного от среднего " << (msd * 100 / average) << endl;
+
+	ofstream out;
+	out.open(path + "repClock.txt");
+	out.precision(0);
+	for (size_t i = 0; i < results.size(); i++)
+	{
+		out << fixed << results[i] << "\n";
+	}
+	out.close();
 }
 
 void repeatabilityTSC() {
 	vector<double> results;
 	vector<int> rand4bitNum(rand4BitSize);
 	read4bitNum(rand4bitNum);
+	int border = 1;
+	while (true)
+	{
+		int ind = rand();
+		unsigned long long start = __rdtsc();
+		for (size_t j = 0; j < border; j++)
+		{
+			bool res = myFunction(rand4bitNum[ind]);
+		}
+		unsigned long long  end = __rdtsc();
+		unsigned long long delta = end - start;
+		if (delta >= 200) {
+			break;
+		}
+		border++;
+	}
+	cout << "граница для tsc " << border << endl;
+
 	for (size_t i = 0; i < 1000; i++)
 	{
 		unsigned long long start;
 		unsigned long long end;
-		unsigned long long frequency = getFrequencyForTSC();
+		//unsigned long long frequency = getFrequencyForTSC();
 		start = __rdtsc();
-		/*for (size_t i = 0; i < rand4bitNum.size(); i++)
-		{*/
+		for (size_t i = 0; i < border; i++)
+		{
 			bool res = myFunction(rand4bitNum[i]);
-		/*}*/
+		}
 		end = __rdtsc();
 		unsigned long long deltaTSC = end - start;
-		double time = (deltaTSC * 1.0) / frequency;
-		//time /= rand4bitNum.size();
-		time *= 1e9;
+		//double time = (deltaTSC * 1.0) / frequency;
+		double time = deltaTSC * 1.0;
 		results.push_back(time);
 	}
 	double average = 0;
 	double msd = 0;
 	statistic(results, results.size(), average, msd);
 	auto min_max = minmax_element(results.begin(), results.end());
-	
-	//cout.precision(5);
-	std::cout << fixed << "Повторяемость для TSC:\n среднее время = " << average << " стандартное отклонение = " << msd
+	cout.precision(0);
+	std::cout << fixed << "Повторяемость для TSC:\n среднее = " << average << " стандартное отклонение = " << msd
 		<< " max = " << *min_max.second << " min = " << *min_max.first << endl << " процент отколнения среднеквадратичного от среднего " << (msd * 100 / average) << endl;
+
+
+	ofstream out;
+	out.open(path + "repTSC.txt");
+	out.precision(0);
+	for (size_t i = 0; i < results.size(); i++)
+	{
+		out << fixed << results[i] << "\n";
+	}
+	out.close();
 }
 
 void repeatabilityQPC() {
 	vector<double> results;
 	vector<int> rand4bitNum(rand4BitSize);
 	read4bitNum(rand4bitNum);
+	int border = 1;
+	while (true)
+	{
+		LARGE_INTEGER t_start, t_finish;
+		int ind = rand();
+		QueryPerformanceCounter(&t_start); // засекаем время старта CODE
+		for (size_t j = 0; j < border; j++)
+		{
+			bool res = myFunction(rand4bitNum[ind]);
+		}
+		QueryPerformanceCounter(&t_finish);
+		auto delta = t_finish.QuadPart - t_start.QuadPart;
+		if (delta >= 200) {
+			break;
+		}
+		border+=10;
+	}
+	cout << "граница для QPC " << border << endl;
+
+
 	for (size_t i = 0; i < 1000; i++)
 	{
-		LARGE_INTEGER t_start, t_finish, freqQPC;
-		QueryPerformanceFrequency(&freqQPC); // получаем частоту
+		LARGE_INTEGER t_start, t_finish;
 		QueryPerformanceCounter(&t_start); // засекаем время старта CODE
-		/*for (size_t i = 0; i < rand4bitNum.size(); i++)
-		{*/
+		for (size_t i = 0; i < border; i++)
+		{
 			bool res = myFunction(rand4bitNum[i]);
-		/*}*/
+		}
 		QueryPerformanceCounter(&t_finish);
 		auto deltaQPC = t_finish.QuadPart - t_start.QuadPart;
-		double time = (deltaQPC * 1.0) / freqQPC.QuadPart;
-		//time /= rand4bitNum.size();
-		time *= 1e9;
-		results.push_back(time);
+		results.push_back(deltaQPC);
 	}
 	double average = 0;
 	double msd = 0;
 	statistic(results, results.size(), average, msd);
 	auto min_max = minmax_element(results.begin(), results.end());
 
-	cout.precision(5);
-	cout << fixed << "Повторяемость для QPC:\n среднее время = " << average << " стандартное отклонение = " << msd
+	cout.precision(0);
+	cout << fixed << "Повторяемость для QPC:\n среднее = " << average << " стандартное отклонение = " << msd
 		<< " max = " << *min_max.second << " min = " << *min_max.first << endl << " процент отколнения среднеквадратичного от среднего " << (msd * 100 / average) << endl;
+
+
+	ofstream out;
+	out.open(path + "repQPC.txt");
+	out.precision(0);
+	for (size_t i = 0; i < results.size(); i++)
+	{
+		out << fixed << results[i] << "\n";
+	}
+	out.close();
 }
 
 //void getApprox(vector<vector<double>>& x, double& a, double& b, int n) {
@@ -381,21 +450,6 @@ void empiricalClock() {
 	vector<double> times;
 	vector<int> rand4bitNum(1e7);
 	read4bitNum(rand4bitNum);
-
-	//clock_t  begin = clock();
-	//clock_t end = clock();
-	/*int payload = 1000;
-	while (end - begin < 1) {
-		begin = clock();
-		for (size_t i = 0; i < payload; i++)
-		{
-			bool res = myFunction(rand4bitNum[i]);
-		}
-		end = clock();
-		payload += 1e4;
-	}
-	cout << payload << endl;
-	empiricalDelta = payload;*/
 	for (size_t i = 1; i < 1001; i++)
 	{
 		clock_t start = clock();
