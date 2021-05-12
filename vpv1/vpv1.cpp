@@ -37,13 +37,13 @@ long fibRecursive(long n) {
 	return fibRecursive(n - 1) + fibRecursive(n - 2);
 }
 
-long measureByClock(int n, std::function<long(unsigned __int64)> func) {
+long measureByClock(int n) {
 	// measuring by clock
 	long res = 0;
 	clock_t start = clock();
 	for (size_t i = 0; i < counter; i++)
 	{
-		res = func(n);
+		res = fibRecursive(n);
 	}
 	clock_t end = clock();
 	clock_t delta = end - start;
@@ -78,7 +78,7 @@ unsigned long long getFrequencyForTSC() {
 }
 
 
-long measureByTSC(int n, std::function<long(unsigned __int64)> func) {
+long measureByTSC(int n) {
 
 	//cout << "frequancy is " << F1 << endl;
 	unsigned long long start;
@@ -88,7 +88,7 @@ long measureByTSC(int n, std::function<long(unsigned __int64)> func) {
 	start = __rdtsc();
 	/*for (size_t i = 0; i < counter; i++)
 	{*/
-	res = func(n);
+	res = fibRecursive(n);
 	//}
 	end = __rdtsc();
 	unsigned long long deltaTSC = end - start;
@@ -99,14 +99,14 @@ long measureByTSC(int n, std::function<long(unsigned __int64)> func) {
 	return res;
 }
 
-long measureByQPC(int n, std::function<long(unsigned __int64)> func) {
+long measureByQPC(int n) {
 	LARGE_INTEGER t_start, t_finish, freqQPC;
 	QueryPerformanceFrequency(&freqQPC); // получаем частоту
 	QueryPerformanceCounter(&t_start); // засекаем время старта CODE
 	long res = 0;
 	for (size_t i = 0; i < counter; i++)
 	{
-		res = func(n);
+		res = fibRecursive(n);
 	}
 	QueryPerformanceCounter(&t_finish);
 	//cout << "частота:" << freqQPC.QuadPart << endl;
@@ -117,6 +117,13 @@ long measureByQPC(int n, std::function<long(unsigned __int64)> func) {
 	cout.precision(0);
 	cout << "Result for " << n << " is " << fixed << delta << " by QPC " << "\n";
 	return res;
+}
+
+void generateVectorValues(vector<double>& arr, int n) {
+	for (size_t i = 0; i < n; i++)
+	{
+		arr[i] = i + 1;
+	}
 }
 
 double statistic(vector<double>& arr, long long n, double& average, double& msd) {
@@ -137,12 +144,7 @@ double statistic(vector<double>& arr, long long n, double& average, double& msd)
 }
 
 //int sumVector(vector<int>)
-void generateVectorValues(vector<double>& arr, int n) {
-	for (size_t i = 0; i < n; i++)
-	{
-		arr[i] = i + 1;
-	}
-}
+
 struct RP
 {
 	double time;
@@ -160,7 +162,6 @@ void clockRP(vector<double>& vec) {
 		clock_t end = clock();
 		clock_t delta = end - start;
 		double time = (delta * 1.0) / (CLOCKS_PER_SEC);
-		time *= 1e0;
 		cout.precision(5);
 		RP rp;
 		rp.n = n;
@@ -172,7 +173,6 @@ void clockRP(vector<double>& vec) {
 			cout << endl;
 			cout << "n   = " << results[results.size() - 1].n << " time = " << results[results.size() - 1].time << " с";
 			cout << endl;
-
 			return;
 		}
 	}
@@ -187,17 +187,9 @@ void tscRP() {
 	end = __rdtsc();
 	unsigned long long delta = end - start;
 	double time = (delta * 1.0) / frequency;
-	//time *= 1e9;
 	cout << "для TSC\n" << time << " с\n";
 }
 
-double increamentVector(vector<int>& vec, int n) {
-	for (size_t i = 0; i < n; i++)
-	{
-		vec[i]++;
-	}
-	return vec[n - 1] * 1.0;
-}
 void QPCRP(vector<double>& vec) {
 	LARGE_INTEGER t_start, t_finish, freqQPC;
 	vector<RP> results;
@@ -207,8 +199,6 @@ void QPCRP(vector<double>& vec) {
 		double average = 0.0;
 		double msd = 0.0;
 		QueryPerformanceCounter(&t_start); // засекаем время старта CODE
-		//average = statistic(vec, n, average, msd);
-		//average = increamentVector(vec, n);
 		int a = 0;
 		for (size_t i = 0; i < n; i++)
 		{
@@ -217,13 +207,9 @@ void QPCRP(vector<double>& vec) {
 		QueryPerformanceCounter(&t_finish);
 		QueryPerformanceFrequency(&freqQPC); // получаем частоту
 		auto deltaQPC = t_finish.QuadPart - t_start.QuadPart;
-		//cout << "частота:" << freqQPC.QuadPart << endl;
 		double delta = (deltaQPC * 1.0);
 		delta = delta / freqQPC.QuadPart;
-		//delta *= 1e9;
 		double time = delta;
-
-
 		cout.precision(5);
 		RP rp;
 		rp.n = n;
@@ -263,7 +249,6 @@ void read4bitNum(vector<int>& vec) {
 }
 
 
-int countTSCRep = 20;
 int rand4BitSize = 1e5;
 void repeatabilityClock() {
 	vector<double> results;
@@ -301,7 +286,7 @@ void repeatabilityClock() {
 	statistic(results, results.size(), average, msd);
 	auto min_max = minmax_element(results.begin(), results.end());
 
-	//cout.precision(5);
+	cout.precision(0);
 	std::cout << fixed << "Повторяемость для clock:\n среднее  = " << average << " стандартное отклонение = " << msd
 		<< " max = " << *min_max.second << " min = " << *min_max.first << endl << " процент отколнения среднеквадратичного от среднего " << (msd * 100 / average) << endl;
 
@@ -323,12 +308,13 @@ void repeatabilityTSC() {
 	while (true)
 	{
 		int ind = rand();
-		unsigned long long start = __rdtsc();
+		unsigned long long start, end;
+		start = __rdtsc();
 		for (size_t j = 0; j < border; j++)
 		{
 			bool res = myFunction(rand4bitNum[ind]);
 		}
-		unsigned long long  end = __rdtsc();
+		end = __rdtsc();
 		unsigned long long delta = end - start;
 		if (delta >= 200) {
 			break;
@@ -341,7 +327,6 @@ void repeatabilityTSC() {
 	{
 		unsigned long long start;
 		unsigned long long end;
-		//unsigned long long frequency = getFrequencyForTSC();
 		start = __rdtsc();
 		for (size_t i = 0; i < border; i++)
 		{
@@ -349,7 +334,6 @@ void repeatabilityTSC() {
 		}
 		end = __rdtsc();
 		unsigned long long deltaTSC = end - start;
-		//double time = (deltaTSC * 1.0) / frequency;
 		double time = deltaTSC * 1.0;
 		results.push_back(time);
 	}
@@ -376,7 +360,7 @@ void repeatabilityQPC() {
 	vector<double> results;
 	vector<int> rand4bitNum(rand4BitSize);
 	read4bitNum(rand4bitNum);
-	int border = 1;
+	int border = 10;
 	while (true)
 	{
 		LARGE_INTEGER t_start, t_finish;
@@ -391,7 +375,7 @@ void repeatabilityQPC() {
 		if (delta >= 200) {
 			break;
 		}
-		border+=10;
+		border += 10;
 	}
 	cout << "граница для QPC " << border << endl;
 
@@ -594,17 +578,16 @@ int main()
 	cin >> menu;
 	if (menu == 1 || menu == 0) {
 		int n = 10;
-
-		measureByClock(n, fibRecursive);
-		measureByTSC(n, fibRecursive);
-		measureByQPC(n, fibRecursive);
+		measureByClock(n);
+		measureByTSC(n);
+		measureByQPC(n);
 		cout << endl;
 
 		int k = 40;
 		counter = 10;
-		measureByClock(k, fibRecursive);
-		measureByTSC(k, fibRecursive);
-		measureByQPC(k, fibRecursive);
+		measureByClock(k);
+		measureByTSC(k);
+		measureByQPC(k);
 	}
 	else if (menu == 2 || menu == 0) {
 		cout << "разрешающая способность \n";
@@ -619,9 +602,12 @@ int main()
 	}
 	else if (menu == 3 || menu == 0) {
 		cout << "повторяемость \n";
-		repeatabilityClock();
 		repeatabilityTSC();
+		repeatabilityClock();
+		
 		repeatabilityQPC();
+
+
 	}
 	else if (menu == 4 || menu == 0) {
 		empiricalClock();
