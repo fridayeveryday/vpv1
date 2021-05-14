@@ -10,7 +10,7 @@ typedef float(*PFloatFu)(float);
 typedef FixPoint(*PFixFunc)(FixPoint);
 
 // Накопление данных, фильтрация и статистическая обработка
-class Log { 
+class Log {
 public:
 	vector<__int64> val;// протокол серии измерений
 	int count;			// длина серии измерений
@@ -57,17 +57,17 @@ public:
 
 // Базовый класс верификации - замера времени 
 class Tester {
-public:	
+public:
 	string shortname;	// короткое имя релиза вместо номера
 	string name;		// Семантическое наименование метода реализации функции
 	float err;			// Предельно допустимая ошибка
 	float xStep;		// Шаг обхода значений аргументов при верификации функций
 	Log log;			// Протокол conf.repeat результатов измерений с функциями статистической обработки
-	Report * report;	// Адрес отчета, куда передается результат
+	Report* report;	// Адрес отчета, куда передается результат
 	__int64 overhead;   // накладные расходы на измерение
 	bool proper;			// результат верификации
-	Tester(string sn, string nm, Config & conf)
-		: shortname(sn), name(nm), err(conf.maxErr),  report(conf.rep), xStep(conf.xStepVerify), overhead(conf.overhead) {
+	Tester(string sn, string nm, Config& conf)
+		: shortname(sn), name(nm), err(conf.maxErr), report(conf.rep), xStep(conf.xStepVerify), overhead(conf.overhead) {
 		log.count = conf.count;
 		log.delMax = conf.delMax;
 		log.delMin = conf.delMin;
@@ -95,8 +95,8 @@ public:
 class TestFloat : public Tester {
 public:
 	FloatFunc func; // Адрес тестируемой функции
-	TestFloat(string sn, string nm, FloatFunc fu, Config & conf) :
-	Tester(sn, nm, conf), func(fu) {}
+	TestFloat(string sn, string nm, FloatFunc fu, Config& conf) :
+		Tester(sn, nm, conf), func(fu) {}
 	string test() { // Проверка правильности функции для всех значений мантисс при нулевом порядке
 		ostringstream str;
 		//str << shortname;
@@ -104,7 +104,7 @@ public:
 			float etalon = flMathFunc(x);
 			float real = func(x);
 			if (fabs(etalon - real) > err) {
-				str <<  ": Ошибка func(" << x << ") = " << real << " != " << etalon;
+				str << ": Ошибка func(" << x << ") = " << real << " != " << etalon;
 				proper = false;
 				return str.str();
 			}
@@ -114,8 +114,8 @@ public:
 		return str.str();
 	}
 	void measure() { // Замеры времени для repeat значений x in [0, 1) с равномерным шагом
-		__int64 t1,t2;
-		for ( unsigned n = 0; n < arrX.size(); n++) {
+		__int64 t1, t2;
+		for (unsigned n = 0; n < arrX.size(); n++) {
 			float x = arrX[n];
 			CPUID_RDTSC(t1);
 			float fl = func(x);
@@ -129,8 +129,8 @@ public:
 class TestFixed : public Tester {
 public:
 	FixedFunc func; // Адрес тестируемой функции
-	TestFixed(string sn, string nm, FixedFunc fu, Config & conf) :
-	Tester(sn, nm, conf), func(fu) {}
+	TestFixed(string sn, string nm, FixedFunc fu, Config& conf) :
+		Tester(sn, nm, conf), func(fu) {}
 	string test() { // Проверка правильности функции для всех положительных значений Fixed 
 		ostringstream str;
 		str << shortname;
@@ -141,8 +141,8 @@ public:
 			FixPoint r = func(x);	// реальный fixed
 			float real = FIX2FLOAT(r); // превращаем реальный в float, чтобы сранить
 			if (fabs(etalon - real) > err) {
-				str	<< ": Ошибка func(" << hex << uppercase << setfill('0') << setw(8) << x << "): "
-					<< hex << uppercase << setfill('0') << setw(8) << r << " != " 
+				str << ": Ошибка func(" << hex << uppercase << setfill('0') << setw(8) << x << "): "
+					<< hex << uppercase << setfill('0') << setw(8) << r << " != "
 					<< hex << uppercase << setfill('0') << setw(8) << fixEtalon
 					<< " == " << etalon;
 				proper = false;
@@ -155,7 +155,7 @@ public:
 	}
 	void measure() { // Замеры времени для repeat значений x in [0, 1) с равномерным шагом
 		__int64 t1, t2;
-		for ( unsigned n = 0; n < arrX.size(); n++) {
+		for (unsigned n = 0; n < arrX.size(); n++) {
 			FixPoint x = FLOAT2FIX(arrX[n]);
 			CPUID_RDTSC(t1);
 			FixPoint f = func(x);

@@ -20,7 +20,7 @@
 using namespace std;
 
 // Устанавливая в 0 следующие константы, можно отключать времязатратные фазы, не участвующие в отладке
-#define GOFLOAT 1 // включение-выключение процессов испытания функций с плавающей точкой
+#define GOFLOAT 0 // включение-выключение процессов испытания функций с плавающей точкой
 #define GOFIX 1   // включение-выключение процессов испытания функций с фиксированной точкой
 #define GOTABLE 1 // включение-выключение процессов испытания таблично-алгоритмических функций
 
@@ -40,6 +40,13 @@ Config config(
 int main(int argc, char* argv[])
 {
 	init(argc, argv, config);
+
+	//TestFloat* tfl = new TestFloat("flCycleGorn", "Float - цикл схемы Горнера", flCycleGorn, config);
+	//TestFixed* tfx = new TestFixed("fxCycleGorn", "Fixed - цикл схемы Горнера", fxCycleGorn, config);
+	////tfl->verify();
+	////tfx->verify();
+	flCycleGorn(0.5);
+	fxCycleGorn(0.5);
 	// Создание массива объектов тестирования
 	vector <Tester* > arr = {
 #if GOFLOAT != 0

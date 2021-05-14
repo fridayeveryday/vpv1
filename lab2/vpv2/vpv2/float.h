@@ -4,7 +4,8 @@
 //**************************************************************************************
 #pragma once
 #include "vpv-lab2.h"
-
+#include <iostream>
+using namespace std;
 // массив коэффициентов
 float flCoef[LEN_POLINOM] = { 1., -DIV1_FACT3, DIV1_FACT5, -DIV1_FACT7, DIV1_FACT9,-DIV1_FACT11 };
 
@@ -24,9 +25,9 @@ float flMathFunc(float x) {
 
 // Цикл формулы ряда 1 - x^2/3! + x^4/5! - x^6/7! + x^8/9! через цикл sum += x^2n/(2n+1)!
 float flCyNoGorn(float x) {
-	float sum = 1.0;
+	float sum = 0.0;
 	for (int n = 1; n < LEN_POLINOM; n++) {
-		sum += (float)(pow(-1, n - 1) * pow(x, 2 * n - 1) / factorial(2 * n - 1));
+		sum += (float)pow(-1, n - 1.0) * pow(x, 2.0 * n - 1) / factorial(2 * n - 1);
 	}
 	return sum;
 }
@@ -38,8 +39,14 @@ float flNoCyNoGorn(float x) {
 // Цикл схемы Горнера
 float flCycleGorn(float x) {
 	float x2 = x * x, sum = 0.;
-	for (int n = LEN_POLINOM; n > 0; n--)
+	std::cout << "total sum FLOAT: \n";
+	cout.precision(20);
+	for (int n = LEN_POLINOM; n > 0; n--) {
 		sum = sum * x2 + flCoef[n - 1];
+		FixPoint fixEtalon = FLOAT2FIX(sum);
+		std::cout << fixEtalon << endl;
+		//cout << sum << endl;
+	}
 	return sum * x;
 }
 
@@ -52,6 +59,7 @@ float flNoCyGornArr(float x) {
 // Бесцикловая схема Горнера - константы вместо элементов массива
 float flNoCyGornConst(float x) {
 	float x2 = x * x;
-	return x * ((float)1.0 - x2 * (DIV1_FACT3 + x2 * (DIV1_FACT5 - x2 * (DIV1_FACT7 + x2 * (DIV1_FACT9 - x2 * DIV1_FACT11)))));
+	return (((((-DIV1_FACT11 * x2 + DIV1_FACT9) * x2 - DIV1_FACT7) * x2 + DIV1_FACT5) * x2 - DIV1_FACT3) * x2 + 1.0) * x;
+		//x * ((float)1.0 - x2 * (DIV1_FACT3 + x2 * (DIV1_FACT5 - x2 * (DIV1_FACT7 + x2 * (DIV1_FACT9 - x2 * DIV1_FACT11)))));
 }
 

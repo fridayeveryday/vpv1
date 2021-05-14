@@ -7,12 +7,14 @@
 #include "vpv-lab2.h"
 #include "string.h"
 #include <sstream>
+#include <iostream>
+
 
 using namespace std;
 
 // #define DEBUG // раскомментировать, если нужно бороться с ошибкми бесцикловой реализация схемы Горнера
 
-FixPoint fixCoef[LEN_POLINOM] = { DIV1_FACT1FP, -DIV1_FACT3FP, DIV1_FACT5FP, -DIV1_FACT7FP, DIV1_FACT9FP };
+FixPoint fixCoef[LEN_POLINOM] = { DIV1_FACT1FP, -DIV1_FACT3FP, DIV1_FACT5FP, -DIV1_FACT7FP, DIV1_FACT9FP, -DIV1_FACT11FP };
 
 /*void printHex(FixPoint x) {
 	cout << hex << uppercase << setfill('0') << setw(8) << x;
@@ -50,28 +52,28 @@ bool testFixOperations(Config config) {
 	int sz = sizeof(fix) / sizeof(FixPoint);
 	// Контроль FLOAT2FIX путем сопоставления fix[i] и FLOAT2FIX(flo[i]) 
 	bool ok1 = true;
-	for (int n = 0; n < sz; n++) { 
+	for (int n = 0; n < sz; n++) {
 		FixPoint fx = FLOAT2FIX(flo[n]);
-		if ( fx != fix[n]) { // 
-			cout	<< "FLOAT2FIX(" << flo[n] << "):: " << fixPointToStr(fx, FRACT_PART) 
-					<< " != " << fixPointToStr(fix[n], FRACT_PART) << endl;
+		if (fx != fix[n]) { // 
+			cout << "FLOAT2FIX(" << flo[n] << "):: " << fixPointToStr(fx, FRACT_PART)
+				<< " != " << fixPointToStr(fix[n], FRACT_PART) << endl;
 			ok1 = false;
 		}
 	}
-	if (ok1 && config.lenPrintLog > 0) 
+	if (ok1 && config.lenPrintLog > 0)
 		cout << "FLOAT2FIX(x) - OK" << endl;
-	
+
 	// Контроль FIX2FLOAT для каждого fix[i] получить float и сравнивнить с flo[i]
 	bool ok2 = true;
 	for (int n = 0; n < sz; n++) {
 		float fl = FIX2FLOAT(fix[n]);
 		if (fl != flo[n]) {
-			cout	<< "FIX2FLOAT(" << fixPointToStr(fix[n], FRACT_PART) << "):: " << fl
-					<< " != " << flo[n] << endl;
+			cout << "FIX2FLOAT(" << fixPointToStr(fix[n], FRACT_PART) << "):: " << fl
+				<< " != " << flo[n] << endl;
 			ok2 = false;
 		}
 	}
-	if (ok2 && config.lenPrintLog > 0) 
+	if (ok2 && config.lenPrintLog > 0)
 		cout << "FIX2FLOAT(x) - OK" << endl;
 	// Контроль FIXMUL - всемозможные сочетания элементов fix умножаются и результат считается равным эталоному,
 	// если он по модулю не больше X_STEP 
@@ -81,14 +83,14 @@ bool testFixOperations(Config config) {
 			FixPoint mfix = FIXMUL(fix[n], fix[k]);
 			float etalon = flo[n] * flo[k];
 			if (fabs(FIX2FLOAT(mfix) - etalon) > X_STEP) {
-				cout	<< "FIXMUL(" << fixPointToStr(fix[n], FRACT_PART) << ", "
-						<< fixPointToStr(fix[k], FRACT_PART) << ") = "
-						<< fixPointToStr(mfix, FRACT_PART) << " != " << etalon << endl;
+				cout << "FIXMUL(" << fixPointToStr(fix[n], FRACT_PART) << ", "
+					<< fixPointToStr(fix[k], FRACT_PART) << ") = "
+					<< fixPointToStr(mfix, FRACT_PART) << " != " << etalon << endl;
 				ok3 = false;
 			}
 		}
 	}
-	if (ok3 && config.lenPrintLog > 0) 
+	if (ok3 && config.lenPrintLog > 0)
 		cout << "FIXMUL(x, y) - OK" << endl;
 	return ok1 && ok2 && ok3;
 }
@@ -97,7 +99,9 @@ bool testFixOperations(Config config) {
 // Директивы условной трасляции DEBUG вставлены для облегчения отладки бесцикловой реализации
 // Когда цикловая реализация отлажена
 FixPoint fxCycleGorn(FixPoint x) {
-	FixPoint x2 = FIXMUL(x,x), sum = 0;
+	auto mul = (__int64)x * (__int64)x;
+	auto shift = mul >> FRACT_PART;
+	FixPoint x2 = FIXMUL(x, x), sum = 0;
 #ifdef DEBUG
 	// В if должно быть значение, на котором спотыкается проверка бесцикловой реализации
 	// Если это случиться, то придется отрессировать бесцикловую реализацию, 
@@ -106,13 +110,18 @@ FixPoint fxCycleGorn(FixPoint x) {
 	if (x == val) {
 		cout << "x2 = ";
 		printHex(x2);
-		cout << ":: sum("; 
+		cout << ":: sum(";
 		printHex(x);
 		cout << "): ";
 	}
 #endif
+	cout << "total sum FIXED: \n";
+	cout.precision(20);
 	for (int n = LEN_POLINOM; n > 0; n--) {
 		sum = FIXMUL(sum, x2) + fixCoef[n - 1];
+		/*float real = FIX2FLOAT(sum);
+		cout << real << endl;*/
+		cout << sum << endl;
 #ifdef DEBUG
 		if (x == val) {
 			printHex(sum);
@@ -123,7 +132,8 @@ FixPoint fxCycleGorn(FixPoint x) {
 #ifdef DEBUG
 	if (x == val) cout << endl;
 #endif
-	return sum;
+	long long res = sum * x;
+	return res;
 }
 
 // Бесцикловая схема Горнера (массив коэффициентов)
@@ -140,7 +150,7 @@ FixPoint fxNoCyGornConst(FixPoint x) { // Бесцикловая схема Горнера с константам
 	FixPoint sum = FIXMUL(DIV1_FACT9FP, x2) - DIV1_FACT7FP;
 	sum = FIXMUL(sum, x2) + DIV1_FACT5FP;
 	sum = FIXMUL(sum, x2) - DIV1_FACT3FP;
-	sum = FIXMUL(sum , x2) + DIV1_FACT1FP;
+	sum = FIXMUL(sum, x2) + DIV1_FACT1FP;
 	return sum;
 }
 FixPoint fxNoCyGornAsm(FixPoint x) { // Бесцикловая схема Горнера asm
@@ -169,19 +179,19 @@ FixPoint fxNoCyGornAsm(FixPoint x) { // Бесцикловая схема Горнера asm
 		SAL		EAX, 2
 		; EAX = (a[3] * x ^ 2 + a[2])
 		ADD		EAX, 00888889H; DIV1_FACT5FP
-		; EAX = (a[3] * x2 + a[2])*x2
+		; EAX = (a[3] * x2 + a[2]) * x2
 		IMUL	ECX
 		MOV		EAX, EDX
 		SAL		EAX, 2
-		; EAX = (a[3] * x2 + a[2])*x2 + a[1]
+		; EAX = (a[3] * x2 + a[2]) * x2 + a[1]
 		SUB		EAX, 0AAAAAB0H; DIV1_FACT3FP
-		; EAX = ((a[3] * x2 + a[2])*x2 + a[1])*x2
+		; EAX = ((a[3] * x2 + a[2]) * x2 + a[1]) * x2
 		IMUL	ECX
 		MOV		EAX, EDX
 		SAL		EAX, 2
-		; EAX = ((a[3] * x2 + a[2])*x2 + a[1])*x2 + a[0
+		; EAX = ((a[3] * x2 + a[2]) * x2 + a[1]) * x2 + a[0
 		ADD		EAX, 40000000H; DIV1_FACT1FP
-		MOV		sum,	EAX
+		MOV		sum, EAX
 	}
 	return sum;
 }
