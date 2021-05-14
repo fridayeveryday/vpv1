@@ -81,8 +81,8 @@ void init(int argc, char * argv[], Config &conf) {
 	__cpuid(CPUInfo, 0x80000004);
 	memcpy(CPUName + 32, CPUInfo, sizeof(CPUInfo));
 	
-	cout << "ВПВ: лабораторная работа №2. Исследование реализаций функции sin(x)/x степенными рядами"
-		 << endl << "Студент группы ЭВМд-31 Негода В.Н." << endl;
+	cout << "ВПВ: лабораторная работа №2. Исследование реализаций функции sin(x) степенными рядами"
+		 << endl << "Студент группы ИВТАПбд-31 Астуков П.Н." << endl;
 	cout << CPUName << endl << endl;
 	cout << "Размер серии: " << conf.count << '.'
 		 << " Отбрасываются " << conf.delMin << " наименьших и " << conf.delMax << " наибольших" << '.'
