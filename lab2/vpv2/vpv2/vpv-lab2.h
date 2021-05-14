@@ -10,9 +10,9 @@
 
 using namespace std;
 
-#define LEN_RES 19  // разрядность результата функции, в младшем бите которого может быть ошибка
+#define LEN_RES 21  // разрядность результата функции, в младшем бите которого может быть ошибка
 #define MAX_ERR (float)(1.0/(1 << LEN_RES)) // максимум погрешности равен 2^(-LEN_RES)
-#define LEN_POLINOM 5 // достаточно иметь 5 членов ряда 
+#define LEN_POLINOM 6 // достаточно иметь 5 членов ряда 
 #define X_STEP ((float)1.0/(float)(1 << 24)) // 2^(-24) - вес младшего разряда мантиссы float
 
 // Значения факториалов 
@@ -20,12 +20,14 @@ using namespace std;
 #define FACT5 (float)(2 * 3 * 4 * 5)
 #define FACT7 (float)(2 * 3 * 4 * 5 * 6 * 7)
 #define FACT9 (float)(2 * 3 * 4 * 5 * 6 * 7 * 8 * 9)
+#define FACT11 (float)(2 * 3 * 4 * 5 * 6 * 7 * 8 * 9 * 10 * 11)
 
 // Значение обратных величин факториалов (float)
 #define DIV1_FACT3 (1./FACT3)
 #define DIV1_FACT5 (1./FACT5)
 #define DIV1_FACT7 (1./FACT7)
 #define DIV1_FACT9 (1./FACT9)
+#define DIV1_FACT11 (1./FACT11)
 
 typedef float(*FloatFunc)(float); // Указатель на функцию вещественных переменн
 
@@ -44,6 +46,8 @@ typedef long FixPoint;
 #define DIV1_FACT5FP (FixPoint)FLOAT2FIX(DIV1_FACT5)
 #define DIV1_FACT7FP (FixPoint)FLOAT2FIX(DIV1_FACT7)
 #define DIV1_FACT9FP (FixPoint)FLOAT2FIX(DIV1_FACT9)
+#define DIV1_FACT11FP (FixPoint)FLOAT2FIX(DIV1_FACT11)
+
 #define TAB "\t"
 
 // Измерение времени в тактах по схеме "барьер - чтение TSC"
