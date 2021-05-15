@@ -115,13 +115,8 @@ FixPoint fxCycleGorn(FixPoint x) {
 		cout << "): ";
 	}
 #endif
-	cout << "total sum FIXED: \n";
-	cout.precision(20);
 	for (int n = LEN_POLINOM; n > 0; n--) {
 		sum = FIXMUL(sum, x2) + fixCoef[n - 1];
-		/*float real = FIX2FLOAT(sum);
-		cout << real << endl;*/
-		cout << sum << endl;
 #ifdef DEBUG
 		if (x == val) {
 			printHex(sum);
@@ -132,32 +127,85 @@ FixPoint fxCycleGorn(FixPoint x) {
 #ifdef DEBUG
 	if (x == val) cout << endl;
 #endif
-	long long res = sum * x;
-	return res;
+	return FIXMUL(sum, x);
 }
 
 // Бесцикловая схема Горнера (массив коэффициентов)
 FixPoint fxNoCyGornArr(FixPoint x) {
 	FixPoint x2 = FIXMUL(x, x); // за скобки выносится x^2
-	FixPoint sum = FIXMUL(fixCoef[4], x2) + fixCoef[3];
+	FixPoint sum = FIXMUL(fixCoef[5], x2) + fixCoef[4];
+	sum = FIXMUL(sum, x2) + fixCoef[3];
 	sum = FIXMUL(sum, x2) + fixCoef[2];
 	sum = FIXMUL(sum, x2) + fixCoef[1];
 	sum = FIXMUL(sum, x2) + fixCoef[0];
-	return sum;
+	FixPoint r = FIXMUL(sum, x);
+	//sum = sum + 4;
+	//return FIXMUL(sum, x);
+	return r;
 }
 FixPoint fxNoCyGornConst(FixPoint x) { // Бесцикловая схема Горнера с константами
 	FixPoint x2 = FIXMUL(x, x);
-	FixPoint sum = FIXMUL(DIV1_FACT9FP, x2) - DIV1_FACT7FP;
+	FixPoint sum = FIXMUL(-DIV1_FACT11FP, x2) + DIV1_FACT9FP;
+	sum = FIXMUL(sum, x2) - DIV1_FACT7FP;
 	sum = FIXMUL(sum, x2) + DIV1_FACT5FP;
 	sum = FIXMUL(sum, x2) - DIV1_FACT3FP;
 	sum = FIXMUL(sum, x2) + DIV1_FACT1FP;
-	return sum;
+	return FIXMUL(sum, x);
 }
 FixPoint fxNoCyGornAsm(FixPoint x) { // Бесцикловая схема Горнера asm
-	FixPoint sum;
+	FixPoint sum = 0;
 	if (x == 0x00B50E40)
 		sum = 5;
 	_asm
+	{
+		// Бесцикловая схема Горнера (массив коэффициентов)
+		; FixPoint fxNoCyGornArr(FixPoint x) {
+		/*	push        ebp
+				mov         ebp, esp
+				push        esi*/
+				;	FixPoint x2 = FIXMUL(x, x); // за скобки выносится x^2
+			mov         esi, dword ptr[x]
+				mov         eax, esi
+				imul        esi
+				mov         ecx, eax
+				shrd        ecx, edx, 1Eh
+				;	FixPoint sum = FIXMUL(fixCoef[5], x2) + fixCoef[4];
+			mov         edx, 0FFFFFFE6h
+				mov         eax, ecx
+				imul        edx
+				shrd        eax, edx, 1Eh
+				add         eax, 0B8Eh
+				;	sum = FIXMUL(sum, x2) + fixCoef[3];
+			imul        ecx
+				shrd        eax, edx, 1Eh
+				sub         eax, 34034h
+				;	sum = FIXMUL(sum, x2) + fixCoef[2];
+			imul        ecx
+				shrd        eax, edx, 1Eh
+				add         eax, 888888h
+				;	sum = FIXMUL(sum, x2) + fixCoef[1];
+			imul        ecx
+				shrd        eax, edx, 1Eh
+				sub         eax, 0AAAAAAAh
+				;	sum = FIXMUL(sum, x2) + fixCoef[0];
+			imul        ecx
+				shrd        eax, edx, 1Eh
+				add         eax, 40000000h
+				;	FixPoint r = FIXMUL(sum, x);
+			imul        esi
+				;	//sum = sum + 4;
+			;	//return FIXMUL(sum, x);
+			;	int a = r;
+			;	a += 2;
+			;	return a;
+			; pop         esi
+				shrd        eax, edx, 1Eh
+				; add         eax, 2
+				; sub eax, 2
+				mov sum, eax
+				; pop ebp
+	}
+	/*_asm
 	{
 		; eax = x * x
 		MOV		EAX, x
@@ -192,7 +240,7 @@ FixPoint fxNoCyGornAsm(FixPoint x) { // Бесцикловая схема Горнера asm
 		; EAX = ((a[3] * x2 + a[2]) * x2 + a[1]) * x2 + a[0
 		ADD		EAX, 40000000H; DIV1_FACT1FP
 		MOV		sum, EAX
-	}
+	}*/
 	return sum;
 }
 

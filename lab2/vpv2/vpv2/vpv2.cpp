@@ -45,8 +45,8 @@ int main(int argc, char* argv[])
 	//TestFixed* tfx = new TestFixed("fxCycleGorn", "Fixed - цикл схемы Горнера", fxCycleGorn, config);
 	////tfl->verify();
 	////tfx->verify();
-	flCycleGorn(0.5);
-	fxCycleGorn(0.5);
+	/*flCycleGorn(1.0);
+	fxCycleGorn(1.0);*/
 	// Создание массива объектов тестирования
 	vector <Tester* > arr = {
 #if GOFLOAT != 0
@@ -61,9 +61,9 @@ int main(int argc, char* argv[])
 #endif	
 #endif	
 #if GOFIX != 0
-	new TestFixed("fxCycleGorn", "Fixed - цикл схемы Горнера", fxCycleGorn, config),
-	new TestFixed("fxNoCyGornArr", "Fixed - безцикловая схема Горнера(массив коэффициентов)", fxNoCyGornArr, config),
-	new TestFixed("fxNoCyGornConst", "Fixed - безцикловая реализация схемы Горнера (константы)", fxNoCyGornConst, config),
+	//new TestFixed("fxCycleGorn", "Fixed - цикл схемы Горнера", fxCycleGorn, config),
+	//new TestFixed("fxNoCyGornArr", "Fixed - безцикловая схема Горнера(массив коэффициентов)", fxNoCyGornArr, config),
+	//new TestFixed("fxNoCyGornConst", "Fixed - безцикловая реализация схемы Горнера (константы)", fxNoCyGornConst, config),
 	new TestFixed("fxNoCyGornAsm", "Fixed - безцикловая реализация схемы Горнера (asm-вставка)", fxNoCyGornAsm, config)
 #if GOTABLE	
 	,
