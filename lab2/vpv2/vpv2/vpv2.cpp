@@ -21,7 +21,7 @@ using namespace std;
 
 // Устанавливая в 0 следующие константы, можно отключать времязатратные фазы, не участвующие в отладке
 #define GOFLOAT 0 // включение-выключение процессов испытания функций с плавающей точкой
-#define GOFIX 1   // включение-выключение процессов испытания функций с фиксированной точкой
+#define GOFIX 0   // включение-выключение процессов испытания функций с фиксированной точкой
 #define GOTABLE 1 // включение-выключение процессов испытания таблично-алгоритмических функций
 
 Report report;
@@ -61,9 +61,9 @@ int main(int argc, char* argv[])
 #endif	
 #endif	
 #if GOFIX != 0
-	//new TestFixed("fxCycleGorn", "Fixed - цикл схемы Горнера", fxCycleGorn, config),
-	//new TestFixed("fxNoCyGornArr", "Fixed - безцикловая схема Горнера(массив коэффициентов)", fxNoCyGornArr, config),
-	//new TestFixed("fxNoCyGornConst", "Fixed - безцикловая реализация схемы Горнера (константы)", fxNoCyGornConst, config),
+	new TestFixed("fxCycleGorn", "Fixed - цикл схемы Горнера", fxCycleGorn, config),
+	new TestFixed("fxNoCyGornArr", "Fixed - безцикловая схема Горнера(массив коэффициентов)", fxNoCyGornArr, config),
+	new TestFixed("fxNoCyGornConst", "Fixed - безцикловая реализация схемы Горнера (константы)", fxNoCyGornConst, config),
 	new TestFixed("fxNoCyGornAsm", "Fixed - безцикловая реализация схемы Горнера (asm-вставка)", fxNoCyGornAsm, config)
 #if GOTABLE	
 	,

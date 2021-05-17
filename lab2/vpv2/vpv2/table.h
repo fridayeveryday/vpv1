@@ -20,16 +20,16 @@ ETable2 * table2;
 
 // ƒл€ генерации таблиц с целью повышени€ точности используем double dmathFunc
 double dmathFunc(double x) {
-	return sin(x) / x;
+	return sin(x);
 }
 
 // ѕерва€ производна€ в точке x численным методом на основе центральных разностей
 double firstDerivative(double x) {
-	return cos(x) / x - dmathFunc(x) / x ;
+	return cos(x) ;
 }
 // ¬тора€ производна€ в точке x численным методом
 double secondDerivative(double x) {
-	return -dmathFunc(x) - 2 * cos(x) / (x * x) + 2 * sin(x) / (x * x * x);
+	return -sin(x);
 }
 
 // ѕолином нулевой степени реализуетс€ - пр€мой табличный метод
@@ -42,6 +42,7 @@ ETable0 * genTable0() {
 	return table;
 }
 float tableFunc0(float x) {
+	cout << (int)(x * (1 << LEN_ADDR0))<< " " << table0[(int)(x * (1 << LEN_ADDR0))] << endl;
 	return table0[(int)(x * (1 << LEN_ADDR0))];
 }
 

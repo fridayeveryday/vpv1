@@ -205,42 +205,6 @@ FixPoint fxNoCyGornAsm(FixPoint x) { // Бесцикловая схема Горнера asm
 				mov sum, eax
 				; pop ebp
 	}
-	/*_asm
-	{
-		; eax = x * x
-		MOV		EAX, x
-		MOV		ECX, EAX
-		IMUL	ECX
-		MOV		EAX, EDX
-		SAL		EAX, 2
-		; ecx = x2 = x * 2
-		MOV		ECX, EAX
-		; EAX = a[4] * x2
-		MOV		EAX, 0B8EH; DIV1_FACT9FP
-		IMUL	ECX
-		MOV		EAX, EDX
-		SAL		EAX, 2
-		; EAX = a[4] * x2 + a[3]
-		ADD		EAX, 0FFFCBFCCH; -DIV1_FACT7FP
-		IMUL	ECX
-		MOV		EAX, EDX
-		SAL		EAX, 2
-		; EAX = (a[3] * x ^ 2 + a[2])
-		ADD		EAX, 00888889H; DIV1_FACT5FP
-		; EAX = (a[3] * x2 + a[2]) * x2
-		IMUL	ECX
-		MOV		EAX, EDX
-		SAL		EAX, 2
-		; EAX = (a[3] * x2 + a[2]) * x2 + a[1]
-		SUB		EAX, 0AAAAAB0H; DIV1_FACT3FP
-		; EAX = ((a[3] * x2 + a[2]) * x2 + a[1]) * x2
-		IMUL	ECX
-		MOV		EAX, EDX
-		SAL		EAX, 2
-		; EAX = ((a[3] * x2 + a[2]) * x2 + a[1]) * x2 + a[0
-		ADD		EAX, 40000000H; DIV1_FACT1FP
-		MOV		sum, EAX
-	}*/
 	return sum;
 }
 

@@ -39,13 +39,9 @@ float flNoCyNoGorn(float x) {
 // Цикл схемы Горнера
 float flCycleGorn(float x) {
 	float x2 = x * x, sum = 0.;
-	/*std::cout << "total sum FLOAT: \n";
-	cout.precision(20);*/
 	for (int n = LEN_POLINOM; n > 0; n--) {
 		sum = sum * x2 + flCoef[n - 1];
 		FixPoint fixEtalon = FLOAT2FIX(sum);
-		//std::cout << fixEtalon << endl;
-		//cout << sum << endl;
 	}
 	return sum * x;
 }
