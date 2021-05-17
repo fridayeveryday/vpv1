@@ -5,7 +5,7 @@
 #pragma once
 #include "float.h"
 
-#define LEN_ADDR0 20 // размер адреса таблицы для полинома нулевой степени
+#define LEN_ADDR0 21 // размер адреса таблицы для полинома нулевой степени
 #define LEN_ADDR1 10  // размер адреса таблицы для полинома первой степени
 #define LEN_ADDR2 8  // размер адреса таблицы для полинома второй степени
 #define DX_DERIV  (1.0E-1-20) // dX численного дифференциирования (производные функции в точке)
@@ -42,7 +42,7 @@ ETable0 * genTable0() {
 	return table;
 }
 float tableFunc0(float x) {
-	cout << (int)(x * (1 << LEN_ADDR0))<< " " << table0[(int)(x * (1 << LEN_ADDR0))] << endl;
+	//cout << (int)(x * (1 << LEN_ADDR0))<< " " << table0[(int)(x * (1 << LEN_ADDR0))] << endl;
 	return table0[(int)(x * (1 << LEN_ADDR0))];
 }
 
