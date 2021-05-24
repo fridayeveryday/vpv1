@@ -39,7 +39,7 @@ void cpuInfo() {
 }
 void init(int argc, char * argv[], Config &conf) {
 	report.startText << "Высокопроизводительные вычисления. Лабораторная работа № 3."
-		<< endl << "Студент гр. ЭВМд-31 Негода В.Н." << endl;
+		<< endl << "Студент гр. ИВТАПбд-31 Астуков П.Н." << endl;
 	TOpt::iterator it;
 	setlocale(LC_CTYPE, "rus");
 	
